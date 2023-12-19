@@ -50,7 +50,8 @@ function Form() {
   }
 
   function validateForm() {
- 
+    
+    //validations
 
     if (formData.appName.length === 0) {
       alert('Invalid Form, appName can not be empty')
