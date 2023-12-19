@@ -50,7 +50,7 @@ function Form() {
   }
 
   function validateForm() {
-    // Check if the First Name is an Empty string or not.
+ 
 
     if (formData.appName.length === 0) {
       alert('Invalid Form, appName can not be empty')
