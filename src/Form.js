@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./Form.css";
 import axios from 'axios';
-
+import { saveAs } from 'file-saver';
 
 function Form() {
 
@@ -10,12 +10,8 @@ function Form() {
     packageName: '',
     databaseType: '',
     buildTool: '',
-    codeQuality: [],
-    codeFormatting:[],
-    advanceSettings:[],
-    actuators:[],
-    entityName: '',
-    entityPackageName:'',
+    features: [],
+    formatCode: []
   })
 
   
@@ -89,43 +85,32 @@ function Form() {
   const onChangeHandler = (event) => {
 
     console.log(event)
-    if (event.target.name === 'codeQuality') {
+    if (event.target.name === 'features') {
 
       let copy = { ...formData }
 
       if (event.target.checked) {
-        copy.codeQuality.push(event.target.value)
+        copy.features.push(event.target.value)
       } else {
-        copy.codeQuality = copy.codeQuality.filter(el => el !== event.target.value)
+        copy.features = copy.features.filter(el => el !== event.target.value)
       }
       setFormData(copy)
 
     }
-    
-    else    if (event.target.name === 'advanceSettings') {
+
+    else  if (event.target.name === 'formatCode') {
 
       let copy = { ...formData }
 
       if (event.target.checked) {
-        copy.advanceSettings.push(event.target.value)
+        copy.formatCode.push(event.target.value)
       } else {
-        copy.advanceSettings = copy.advanceSettings.filter(el => el !== event.target.value)
-      }
-
-
-      setFormData(copy)
-
-    } else  if (event.target.name === 'actuators') {
-
-      let copy = { ...formData }
-
-      if (event.target.checked) {
-        copy.actuators.push(event.target.value)
-      } else {
-        copy.actuators = copy.actuators.filter(el => el !== event.target.value)
+        copy.formatCode = copy.formatCode.filter(el => el !== event.target.value)
       }
       setFormData(copy)
+
     }
+   
     else {
       setFormData(() => ({
         ...formData,
@@ -139,15 +124,48 @@ function Form() {
     console.log(formData)
   }
 
-  async function axiosTest() {
+  async function callDownloadApi() {
 
     if(validateForm()) {
 
-    const response = await axios.post("http://localhost:8000/api/postData",formData)
+      console.log("sharad - " + typeof(formData.formatCode));
+        console.log(formData.formatCode);
+        if(Object.keys(formData.formatCode).length === 0) {
+          formData.formatCode = false;
+          console.log("sharad - " + typeof(formData.formatCode));
+          console.log("jefbk");
+        } else {
+          formData.formatCode = true;
+        }
+
+    const response = await axios.post("http://localhost:3020/download",formData)
    
     console.log("response : " + response.data)
     return response.data;
 }}
+
+async function downloadzip(){
+  try {
+    // Replace 'your-server-endpoint' with the actual endpoint for downloading the file
+    const downloadEndpoint = 'http://localhost:3020/download';
+
+    // Make an Axios request to the server endpoint
+    const response = await axios.post(downloadEndpoint, formData,{
+      responseType: 'blob', // Important: responseType should be 'blob' for binary data
+    });
+
+    // Extract the file name from the response headers or provide a default name
+    // const filename = response.headers['content-disposition']
+    //   ? response.headers['content-disposition'].split('filename=')[1]
+    //   : 'downloaded-file';
+
+    // Use FileSaver to save the file
+    saveAs(new Blob([response.data]), "test901.zip");
+  } catch (error) {
+    console.error('Error downloading file:', error);
+  }
+}
+
 
   return (
     <div>
@@ -194,32 +212,32 @@ function Form() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="codeQuality" className="form-label">Code Quality, Analyser, Coverage Tool</label>
+          <label htmlFor="features" className="form-label">Code Quality, Analyser, Coverage Tool</label>
           <div>
             <div>
-              <input type="checkbox" name="codeQuality" value="sonar" onChange={onChangeHandler} checked={formData.codeQuality.indexOf('sonar') !== -1} />
+              <input type="checkbox" name="features" value="sonar" onChange={onChangeHandler} checked={formData.features.indexOf('sonar') !== -1} />
               <label htmlFor="sonar">Sonar</label>
             </div>
             <div>
-              <input type="checkbox" name="codeQuality" value="pmd" onChange={onChangeHandler} checked={formData.codeQuality.indexOf('pmd') !== -1} />
+              <input type="checkbox" name="features" value="pmd" onChange={onChangeHandler} checked={formData.features.indexOf('pmd') !== -1} />
               <label htmlFor="pmd">PMD</label>
             </div>
             <div>
-              <input type="checkbox" name="codeQuality" value="spotBugs" onChange={onChangeHandler} checked={formData.codeQuality.indexOf('spotBugs') !== -1} />
+              <input type="checkbox" name="features" value="spotBugs" onChange={onChangeHandler} checked={formData.features.indexOf('spotBugs') !== -1} />
               <label htmlFor="spotBugs">Spot Bugs</label>
             </div>
             <div>
-              <input type="checkbox" name="codeQuality" value="jacoco" onChange={onChangeHandler} checked={formData.codeQuality.indexOf('jacoco') !== -1} />
+              <input type="checkbox" name="features" value="jacoco" onChange={onChangeHandler} checked={formData.features.indexOf('jacoco') !== -1} />
               <label htmlFor="jacoco">Jacoco</label>
             </div>
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="codeFormatting" className="form-label">Code Formatting Tool</label>
+          <label htmlFor="formatCode" className="form-label">Code Formatting Tool</label>
           <div>
             <div>
-              <input type="checkbox" name="codeFormatting" value="spotless" onChange={onChangeHandler} checked={formData.codeFormatting.indexOf('spotless') !== -1} />
+              <input type="checkbox" name="formatCode" value="spotless" onChange={onChangeHandler} checked={formData.formatCode.indexOf('spotless') !== -1}/>
               <label htmlFor="spotless">spotless</label>
             </div>
           </div>
@@ -227,31 +245,31 @@ function Form() {
 
 
         <div className="form-group">
-          <label htmlFor="advanceSettings" className="form-label">Code Quality, Analyser, Coverage Tool</label>
+          <label htmlFor="features" className="form-label">Code Quality, Analyser, Coverage Tool</label>
           <div>
             <div>
-              <input type="checkbox" name="advanceSettings" value="dockerFile" onChange={onChangeHandler} checked={formData.advanceSettings.indexOf('dockerFile') !== -1} />
+              <input type="checkbox" name="features" value="dockerFile" onChange={onChangeHandler} checked={formData.features.indexOf('dockerFile') !== -1} />
               <label htmlFor="dockerFile">Docker File</label>
             </div>
             <div>
-              <input type="checkbox" name="advanceSettings" value="junit" onChange={onChangeHandler} checked={formData.advanceSettings.indexOf('junit') !== -1} />
+              <input type="checkbox" name="features" value="junit" onChange={onChangeHandler} checked={formData.features.indexOf('junit') !== -1} />
               <label htmlFor="junit">Junit 5</label>
             </div>
             <div>
-              <input type="checkbox" name="advanceSettings" value="owasp" onChange={onChangeHandler} checked={formData.advanceSettings.indexOf('owasp') !== -1} />
+              <input type="checkbox" name="features" value="owasp" onChange={onChangeHandler} checked={formData.features.indexOf('owasp') !== -1} />
               <label htmlFor="owasp">OWASP</label>
             </div>
             <div>
-              <input type="checkbox" name="advanceSettings" value="prometheus" onChange={onChangeHandler} checked={formData.advanceSettings.indexOf('prometheus') !== -1} />
+              <input type="checkbox" name="features" value="prometheus" onChange={onChangeHandler} checked={formData.features.indexOf('prometheus') !== -1} />
               <label htmlFor="prometheus">Prometheus</label>
             </div>
 
             <div>
-              <input type="checkbox" name="advanceSettings" value="liquibase" onChange={onChangeHandler} checked={formData.advanceSettings.indexOf('liquibase') !== -1} />
+              <input type="checkbox" name="features" value="liquibase" onChange={onChangeHandler} checked={formData.features.indexOf('liquibase') !== -1} />
               <label htmlFor="liquibase">Liquibase</label>
             </div>
             <div>
-              <input type="checkbox" name="advanceSettings" value="kafka" onChange={onChangeHandler} checked={formData.advanceSettings.indexOf('kafka') !== -1} />
+              <input type="checkbox" name="features" value="kafka" onChange={onChangeHandler} checked={formData.features.indexOf('kafka') !== -1} />
               <label htmlFor="kafka">Kafka</label>
             </div>
           </div>
@@ -260,29 +278,26 @@ function Form() {
 
         
         <div className="form-group">
-          <label htmlFor="actuators" className="form-label">Enable Actuators</label>
+          <label htmlFor="features" className="form-label">Enable features</label>
           <div>
             <div>
-              <input type="checkbox" name="actuators" value="health" onChange={onChangeHandler} checked={formData.actuators.indexOf('health') !== -1} />
+              <input type="checkbox" name="features" value="health" onChange={onChangeHandler} checked={formData.features.indexOf('health') !== -1} />
               <label htmlFor="health">Health</label>
             </div>
             <div>
-              <input type="checkbox" name="actuators" value="auditEvent" onChange={onChangeHandler} checked={formData.actuators.indexOf('auditEvent') !== -1} />
+              <input type="checkbox" name="features" value="auditEvent" onChange={onChangeHandler} checked={formData.features.indexOf('auditEvent') !== -1} />
               <label htmlFor="auditEvent">Audit Event</label>
             </div>
             <div>
-              <input type="checkbox" name="actuators" value="loggers" onChange={onChangeHandler} checked={formData.actuators.indexOf('loggers') !== -1} />
+              <input type="checkbox" name="features" value="loggers" onChange={onChangeHandler} checked={formData.features.indexOf('loggers') !== -1} />
               <label htmlFor="loggers">Loggers</label>
             </div>
-            <div>
-              <input type="checkbox" name="actuators" value="liquibase" onChange={onChangeHandler} checked={formData.actuators.indexOf('liquibase') !== -1} />
-              <label htmlFor="liquibase">Liquibase</label>
-            </div>
+          
           </div>
         </div>
 
         <div className="form-group">
-          <button className="newbtn" onClick={axiosTest} >Generate</button>
+          <button className="newbtn" onClick={downloadzip} >Generate</button>
         </div>
       </form>
     </div>
