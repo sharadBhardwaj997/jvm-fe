@@ -124,47 +124,26 @@ function Form() {
     console.log(formData)
   }
 
-  async function callDownloadApi() {
+  async function downloadzip() {
 
     if(validateForm()) {
 
-      console.log("sharad - " + typeof(formData.formatCode));
-        console.log(formData.formatCode);
-        if(Object.keys(formData.formatCode).length === 0) {
-          formData.formatCode = false;
-          console.log("sharad - " + typeof(formData.formatCode));
-          console.log("jefbk");
-        } else {
-          formData.formatCode = true;
-        }
-
-    const response = await axios.post("http://localhost:3020/download",formData)
-   
-    console.log("response : " + response.data)
-    return response.data;
+      try {
+ 
+        const downloadEndpoint = 'http://localhost:3009/download';
+    
+        // Make an Axios request to the server endpoint
+        const response = await axios.post(downloadEndpoint, formData,{
+          responseType: 'blob', // Important: responseType should be 'blob' for binary data
+        });
+    
+        // Use FileSaver to save the file
+        console.log(formData.appName);
+        saveAs(new Blob([response.data]), formData.appName+".zip");  
+      } catch (error) {
+        console.error('Error downloading file:', error);
+      }
 }}
-
-async function downloadzip(){
-  try {
-    // Replace 'your-server-endpoint' with the actual endpoint for downloading the file
-    const downloadEndpoint = 'http://localhost:3020/download';
-
-    // Make an Axios request to the server endpoint
-    const response = await axios.post(downloadEndpoint, formData,{
-      responseType: 'blob', // Important: responseType should be 'blob' for binary data
-    });
-
-    // Extract the file name from the response headers or provide a default name
-    // const filename = response.headers['content-disposition']
-    //   ? response.headers['content-disposition'].split('filename=')[1]
-    //   : 'downloaded-file';
-
-    // Use FileSaver to save the file
-    saveAs(new Blob([response.data]), "test901.zip");
-  } catch (error) {
-    console.error('Error downloading file:', error);
-  }
-}
 
 
   return (
